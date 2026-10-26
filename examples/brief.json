@@ -1,0 +1,10 @@
+{
+  "brand": "Brightleaf Coffee",
+  "product": "a specialty cold-brew bar",
+  "location": "Mission District, San Francisco",
+  "audience": "young professionals and remote workers who live or work nearby",
+  "goals": "drive trial in the first quarter after opening and build a base of repeat customers",
+  "budget_usd": 25000,
+  "horizon_days": 90,
+  "session_id": "brightleaf"
+}

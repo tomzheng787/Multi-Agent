@@ -1,0 +1,90 @@
+# Live data sources for the local search agent.
+#
+# Each entry becomes a Claude tool automatically (name, description and
+# params_schema -> input_schema). `kind: http` specs are fully declarative;
+# `kind: python` specs point at a function receiving a resilient `fetch`.
+# Add a source here - no code changes needed.
+#
+# All sources below are public and keyless. Respect their usage policies:
+# Nominatim allows at most 1 request/second and requires an identifying
+# User-Agent (set MC_HTTP_USER_AGENT).
+
+apis:
+  - name: geocode_location
+    kind: http
+    description: >
+      Resolve a free-text place (city, neighbourhood or street address) to latitude/longitude
+      using OpenStreetMap Nominatim. Call this first whenever you need coordinates for a place.
+    url: https://nominatim.openstreetmap.org/search
+    query: {q: "{query}", format: jsonv2, limit: "{limit}"}
+    params_schema:
+      type: object
+      properties:
+        query: {type: string, description: "Place to look up, e.g. 'Mission District, San Francisco'"}
+        limit: {type: integer, description: "Maximum matches to return (1-5)", minimum: 1, maximum: 5}
+      required: [query, limit]
+      additionalProperties: false
+    defaults: {limit: 3}
+    result_fields: {display_name: display_name, lat: lat, lon: lon, type: type, importance: importance}
+    max_items: 5
+    min_interval_s: 1.0
+    empty_hint: "No match. Drop street numbers, use a broader area name, or add the city and country."
+
+  - name: find_nearby_businesses
+    kind: python
+    function: marketing_crew.tools.osm:find_places
+    description: >
+      List named businesses of one category within a radius of a coordinate, nearest first, from
+      OpenStreetMap. Use it to map competitors and complementary venues around a location. Call it
+      once per category; geocode the place first to get lat/lon.
+    params_schema:
+      type: object
+      properties:
+        lat: {type: number, description: "Latitude from geocode_location"}
+        lon: {type: number, description: "Longitude from geocode_location"}
+        category:
+          type: string
+          enum: [bakery, bar, bookstore, cafe, clothing, coworking, fast_food, gym, hotel,
+                 pet_store, pharmacy, restaurant, salon, supermarket, yoga]
+        radius_m: {type: integer, description: "Search radius in metres (100-5000)", minimum: 100, maximum: 5000}
+        limit: {type: integer, description: "Maximum businesses to return (1-40)", minimum: 1, maximum: 40}
+      required: [lat, lon, category, radius_m, limit]
+      additionalProperties: false
+    defaults: {radius_m: 1000, limit: 20}
+    empty_hint: "No businesses found. Increase radius_m (up to 5000) or try a related category."
+    timeout_s: 35
+
+  - name: wikipedia_search
+    kind: http
+    description: >
+      Full-text search of English Wikipedia. Use it to find the right article title for a market,
+      industry, product category or neighbourhood before fetching its summary.
+    url: https://en.wikipedia.org/w/api.php
+    query: {action: query, list: search, srsearch: "{query}", srlimit: "{limit}", format: json}
+    params_schema:
+      type: object
+      properties:
+        query: {type: string, description: "Search terms"}
+        limit: {type: integer, description: "Maximum results (1-10)", minimum: 1, maximum: 10}
+      required: [query, limit]
+      additionalProperties: false
+    defaults: {limit: 5}
+    result_path: query.search
+    result_fields: {title: title, snippet: snippet}
+    strip_html: true
+    empty_hint: "No articles. Use fewer, more general keywords."
+
+  - name: wikipedia_summary
+    kind: http
+    description: >
+      Fetch the lead summary of an English Wikipedia article by exact title (from wikipedia_search).
+      Use it for neighbourhood demographics, industry background and category trends.
+    url: https://en.wikipedia.org/api/rest_v1/page/summary/{title}
+    params_schema:
+      type: object
+      properties:
+        title: {type: string, description: "Exact article title, e.g. 'Mission District, San Francisco'"}
+      required: [title]
+      additionalProperties: false
+    result_fields: {title: title, description: description, extract: extract, url: content_urls.desktop.page}
+    empty_hint: "No such article. Run wikipedia_search to find the exact title first."

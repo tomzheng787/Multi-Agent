@@ -1,0 +1,93 @@
+# Evaluation cases for eval/hallucination_eval.py.
+#
+# All evidence below is SYNTHETIC - written for this eval, not real data. The
+# tasks deliberately ask for quantified insights the evidence only partly
+# supports, which is where unverified drafts tend to invent figures. Add cases
+# from your own domain (ideally with real evidence) before trusting the numbers.
+
+cases:
+  - id: cold-brew-mission
+    task: >
+      Write a one-page market-entry brief for a specialty cold-brew bar in the Mission District:
+      competitor overview, positioning, and three quantified insights. Cite evidence ids.
+    evidence:
+      - source: find_nearby_businesses
+        title: cafes within 1500 m
+        content: >
+          Fogline Coffee Bar, 97 m, opens 7:00; Mission Bean Collective, 393 m, opens 6:30;
+          Valencia Street Roasters, 545 m, roasts on site; Twenty-Fourth Espresso, 847 m;
+          Dolores Cold Brew Co., 1001 m, sells bottled cold brew.
+      - source: wikipedia_summary
+        title: Cold brew coffee
+        content: >
+          Cold brew is made by steeping coffee grounds in cold water for 12 to 24 hours. The
+          result is less acidic and smoother than hot-brewed coffee.
+      - source: survey
+        title: neighbourhood intercept survey (n=120)
+        content: >
+          41 of 120 respondents said they buy iced or cold coffee at least weekly; the most cited
+          reason for switching cafes was "shorter wait" (29 respondents).
+
+  - id: yoga-east-austin
+    task: >
+      Draft the market-analysis section for a hot-yoga studio opening in East Austin, including
+      market size indicators and the main competitive threats, with figures where possible.
+    evidence:
+      - source: find_nearby_businesses
+        title: yoga studios within 2000 m
+        content: >
+          Sunrise Flow Yoga, 410 m, vinyasa only; Barton Heat Studio, 1220 m, hot yoga, 30 classes
+          per week; Eastside Community Yoga, 1780 m, donation-based.
+      - source: city_report
+        title: East Austin demographic profile
+        content: >
+          Median resident age 32. 58 percent of households are renters. Population grew 11 percent
+          between the last two census counts.
+
+  - id: bookstore-cafe-edinburgh
+    task: >
+      Write positioning and target-segment recommendations for an independent bookstore cafe in
+      Edinburgh's Old Town, supported by three data points.
+    evidence:
+      - source: find_nearby_businesses
+        title: bookstores within 1000 m
+        content: >
+          Grassmarket Books, 220 m, second-hand; Cowgate Comics, 480 m; Old Town Bookshop, 650 m,
+          antiquarian, closes 17:00.
+      - source: tourism_board
+        title: Old Town visitor note
+        content: >
+          The Old Town is a UNESCO World Heritage Site. Visitor numbers peak in August during the
+          festival season.
+
+  - id: meal-kit-toronto
+    task: >
+      Summarise the competitive landscape and the demand outlook for a plant-based meal-kit start-up
+      in Toronto, including growth figures.
+    evidence:
+      - source: market_note
+        title: analyst note on Canadian meal kits
+        content: >
+          Three national meal-kit brands dominate Canadian delivery. Plant-based options are offered
+          by two of the three, as a minority of their menu.
+      - source: survey
+        title: Toronto consumer panel (n=400)
+        content: >
+          96 of 400 panelists had ordered a meal kit in the past year; 52 of those 96 cancelled within
+          three months, citing price.
+
+  - id: pet-store-brooklyn
+    task: >
+      Write a competitor analysis and a launch-offer rationale for a premium pet-supply store in
+      Park Slope, Brooklyn. Include quantified evidence for the opportunity.
+    evidence:
+      - source: find_nearby_businesses
+        title: pet stores within 1500 m
+        content: >
+          Slope Pet Supply, 300 m, open until 21:00; Fifth Avenue Pets, 900 m, grooming on site;
+          Prospect Paws, 1400 m, raw-food specialist.
+      - source: wikipedia_summary
+        title: Park Slope
+        content: >
+          Park Slope is a neighbourhood in western Brooklyn bordering Prospect Park, known for its
+          brownstones and family-oriented residents.

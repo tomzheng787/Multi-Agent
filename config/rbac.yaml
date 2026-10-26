@@ -1,0 +1,67 @@
+# Role-based access control policy.
+#
+# Every tool an agent can call is mapped to exactly one permission. An agent is
+# only *given* the tools its role allows (least privilege at build time), and
+# every invocation is re-checked at run time (defence in depth) and audited.
+# Permissions support glob wildcards ("evidence:*").
+
+roles:
+  base:
+    description: Capabilities shared by every worker agent.
+    permissions:
+      - bus:publish
+      - bus:consume
+      - memory:read
+
+  manager:
+    description: >
+      Chief Marketing Officer. Plans and delegates; never touches tools directly
+      (CrewAI requires hierarchical managers to be tool-less).
+    permissions:
+      - delegate
+    can_delegate_to: [researcher, analyst, writer, critic, executor]
+
+  researcher:
+    inherits: [base]
+    permissions:
+      - search:local
+      - search:web
+      - evidence:read
+      - evidence:write
+
+  analyst:
+    inherits: [base]
+    permissions:
+      - evidence:read
+      - compute:analytics
+
+  writer:
+    inherits: [base]
+    permissions:
+      - evidence:read
+
+  critic:
+    inherits: [base]
+    permissions:
+      - evidence:read
+      - verify:claims
+
+  executor:
+    inherits: [base]
+    permissions:
+      - evidence:read
+      - compute:analytics
+      - artifact:write
+      - channel:schedule
+
+tools:
+  local_market_search: search:local
+  wikipedia_lookup: search:web
+  evidence_lookup: evidence:read
+  budget_allocator: compute:analytics
+  verify_claims: verify:claims
+  save_artifact: artifact:write
+  schedule_campaign: channel:schedule
+  send_agent_message: bus:publish
+  read_agent_inbox: bus:consume
+  recall_memory: memory:read

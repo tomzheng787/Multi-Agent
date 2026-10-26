@@ -1,0 +1,73 @@
+# End-to-end marketing strategy pipeline. Tasks run under a hierarchical
+# process: the manager delegates each one to its `owner` (RBAC checks the
+# delegation) and reviews the result. `verify: true` attaches the
+# chain-of-verification guardrail, which sends unsupported claims back for
+# revision before the workflow moves on.
+
+tasks:
+  - name: market_research
+    owner: researcher
+    verify: true
+    description: |
+      Research the local market for {brand}, which sells {product} in {location}.
+      Target audience: {audience}. Business goals: {goals}.
+      1. Use local_market_search to map direct competitors and complementary venues around {location}.
+      2. Use wikipedia_lookup for neighbourhood and category context where useful.
+      3. Send the analyst a short note (send_agent_message) about the most important data gaps.
+      Cite the evidence id, like [E3], right after every fact or figure. Do not state facts you have no evidence for.
+
+      Memory from earlier sessions:
+      {history}
+    expected_output: |
+      A markdown research brief with: (1) location profile, (2) a competitor table (name, category,
+      distance, evidence id), (3) market context, (4) data gaps. Every fact cites [E#].
+
+  - name: market_analysis
+    owner: analyst
+    context: [market_research]
+    verify: true
+    description: |
+      Analyse the research for {brand} ({product} in {location}). Read your inbox first.
+      Cover competitive density and positioning gaps, a SWOT, two or three target segments drawn from
+      "{audience}", and the single strongest positioning opportunity.
+      Use evidence_lookup to confirm facts and cite [E#] for every fact or figure; mark judgements as analysis.
+    expected_output: |
+      Markdown analysis: competitive landscape, SWOT, target segments, recommended positioning, with
+      citations on every factual statement.
+
+  - name: strategy_draft
+    owner: writer
+    context: [market_research, market_analysis]
+    verify: true
+    description: |
+      Write the marketing strategy for {brand} for the next {horizon_days} days with a total budget of
+      ${budget_usd}: SMART objectives, positioning statement, three messaging pillars, channel mix with a
+      budget split, a phased roadmap and KPIs.
+      Ground every market fact in cited evidence [E#]. Budgets, targets and KPIs are plans - phrase them as
+      targets or allocations, not as facts.
+    expected_output: A complete marketing strategy document in markdown.
+
+  - name: strategy_review
+    owner: critic
+    context: [strategy_draft, market_analysis]
+    verify: true
+    description: |
+      Review the strategy draft for {brand}. Run verify_claims on it; correct or remove anything
+      unsupported; tighten weak reasoning; check that budget split, roadmap and KPIs are consistent with
+      ${budget_usd} over {horizon_days} days.
+      Then send the executor an approval message (send_agent_message, message_type "approval") listing the
+      non-negotiable constraints.
+      Return the final approved strategy in full, followed by a short changelog.
+    expected_output: The approved strategy (complete markdown) followed by a changelog.
+
+  - name: execution_plan
+    owner: executor
+    context: [strategy_review]
+    verify: false
+    description: |
+      Turn the approved strategy for {brand} into a launch plan. Read your inbox for the critic's
+      constraints first. Use budget_allocator to split ${budget_usd} across the chosen channels,
+      schedule_campaign to schedule each channel's first content items within {horizon_days} days, and
+      save_artifact to save the approved strategy as strategy.md and the launch plan as launch_plan.md.
+      Report what you scheduled and saved.
+    expected_output: An execution summary listing saved artifacts, scheduled items and the budget table.
